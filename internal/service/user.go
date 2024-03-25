@@ -26,10 +26,10 @@ type UserService interface {
 }
 
 type userServiceImpl struct {
-	repo repository.UserQuery
+	repo repository.UserRepository
 }
 
-func NewUserService(repo repository.UserQuery) UserService {
+func NewUserService(repo repository.UserRepository) UserService {
 	return &userServiceImpl{repo: repo}
 }
 
@@ -60,7 +60,7 @@ func (u *userServiceImpl) DeleteUserById(ctx context.Context, id uint64) (model.
 	}
 
 	// delete user by id
-	err = u.repo.DeleteUsersById(ctx, id)
+	err = u.repo.DeleteUserById(ctx, id)
 	if err != nil {
 		return model.User{}, err
 	}

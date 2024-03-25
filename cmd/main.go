@@ -34,7 +34,7 @@ func main() {
 	// /public => generate JWT public
 	usersGroup := g.Group("/users")
 	gorm := infrastructure.NewGormPostgres()
-	userRepository := repository.NewUserQuery(gorm)
+	userRepository := repository.NewUserRepository(gorm)
 	// userRepoMongo := repository.NewUserQueryMongo()
 	userService := service.NewUserService(userRepository)
 	userHandler := handler.NewUserHandler(userService)

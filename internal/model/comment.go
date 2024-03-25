@@ -15,3 +15,13 @@ type Comment struct {
 	UpdatedAt time.Time		 `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `json:"-" gorm:"column:deleted_at"`
 }
+
+type CommentCreate struct {
+	PhotoId uint64 `json:"photo_id" validate:"required"`
+	Message string `json:"message" validate:"required"`
+}
+
+type CommentUpdate struct {
+	PhotoId uint64 `json:"photo_id" validate:"required"`
+	Message string `json:"message" validate:"required"`
+}

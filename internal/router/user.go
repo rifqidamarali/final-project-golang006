@@ -26,6 +26,7 @@ func (u *userRouterImpl) Mount() {
 	u.v.POST("/sign-up", u.handler.UserSignUp)
 	u.v.POST("/sign-in", u.handler.UserSignIn)
 	u.v.GET("/:id", u.handler.GetUserById)
+	
 	// users
 	u.v.Use(u.auth.CheckAuth)
 	// /users

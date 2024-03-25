@@ -15,3 +15,15 @@ type SocialMedia struct {
 	UpdatedAt time.Time		 `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `json:"-" gorm:"column:deleted_at"`
 }
+
+type SocialMediaCreate struct{
+	Name	  string         `json:"name"`
+	Url       string 		 `json:"url"`
+}
+type SocialMediaUpdate struct{
+	Name	  string         `json:"name"`
+	Url       string 		 `json:"url"`
+}
+
+
+

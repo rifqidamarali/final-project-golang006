@@ -8,25 +8,25 @@ import (
 	"gorm.io/gorm"
 )
 
-type UserQuery interface {
+type UserRepository interface {
 	// GetUsers(ctx context.Context) ([]model.User, error)
+	CreateUser(ctx context.Context, user model.User) (model.User, error)
 	GetUserById(ctx context.Context, id uint64) (model.User, error)
 	GetUserByEmail(ctx context.Context, email string) (model.User, error)
-	DeleteUsersById(ctx context.Context, id uint64) error
-	CreateUser(ctx context.Context, user model.User) (model.User, error)
 	UpdateUser(ctx context.Context, user model.User) (model.User, error)
+	DeleteUserById(ctx context.Context, id uint64) error
 }
 
-type UserCommand interface {
-	CreateUser(ctx context.Context, user model.User) (model.User, error)
-}
+// type UserCommand interface {
+// 	CreateUser(ctx context.Context, user model.User) (model.User, error)
+// }
 
-type userQueryImpl struct {
+type userRepositoryImpl struct {
 	db infrastructure.GormPostgres
 }
 
-func NewUserQuery(db infrastructure.GormPostgres) UserQuery {
-	return &userQueryImpl{db: db}
+func NewUserRepository(db infrastructure.GormPostgres) UserRepository {
+	return &userRepositoryImpl{db: db}
 }
 
 // func (u *userQueryImpl) GetUsers(ctx context.Context) ([]model.User, error) {
@@ -40,44 +40,66 @@ func NewUserQuery(db infrastructure.GormPostgres) UserQuery {
 // 	}
 // 	return users, nil
 // }
-
-func (u *userQueryImpl) GetUserById(ctx context.Context, id uint64) (model.User, error) {
+func (u *userRepositoryImpl) CreateUser(ctx context.Context, user model.User) (model.User, error) {
 	db := u.db.GetConnection()
-	users := model.User{}
+	if err := db.
+		WithContext(ctx).
+		Table("users").
+		Save(&user).Error; err != nil {
+			return model.User{}, err
+	}
+	return user, nil
+}
+
+func (u *userRepositoryImpl) GetUserById(ctx context.Context, id uint64) (model.User, error) {
+	db := u.db.GetConnection()
+	user := model.User{}
 	if err := db.
 		WithContext(ctx).
 		Table("users").
 		Where("id = ?", id).
-		Find(&users).Error; err != nil {
+		Find(&user).Error; err != nil {
 		// if user not found, return nil error
 		if err == gorm.ErrRecordNotFound {
-			return model.User{}, nil
+			return user, nil
 		}
 
-		return model.User{}, err
+		return user, err
 	}
-	return users, nil
+	return user, nil
 }
 
-func (u *userQueryImpl) GetUserByEmail(ctx context.Context, email string) (model.User, error) {
+func (u *userRepositoryImpl) GetUserByEmail(ctx context.Context, email string) (model.User, error) {
 	db := u.db.GetConnection()
-	users := model.User{}
+	user := model.User{}
 	if err := db.
 		WithContext(ctx).
 		Table("users").
 		Where("email = ?", email).
-		Find(&users).Error; err != nil {
+		Find(&user).Error; err != nil {
 		// if user not found, return nil error
 		if err == gorm.ErrRecordNotFound {
-			return model.User{}, nil
+			return user, nil
 		}
-
-		return model.User{}, err
+		return user, err
 	}
-	return users, nil
+	return user, nil
 }
 
-func (u *userQueryImpl) DeleteUsersById(ctx context.Context, id uint64) error {
+func (u *userRepositoryImpl) UpdateUser(ctx context.Context, user model.User) (model.User, error) {
+	db := u.db.GetConnection()
+
+	if err := db.
+		WithContext(ctx).
+		Updates(&user).
+		Error; err != nil {
+			return user, err
+		}
+
+	return user, nil
+}
+
+func (u *userRepositoryImpl) DeleteUserById(ctx context.Context, id uint64) error {
 	db := u.db.GetConnection()
 	if err := db.
 		WithContext(ctx).
@@ -85,28 +107,6 @@ func (u *userQueryImpl) DeleteUsersById(ctx context.Context, id uint64) error {
 		Delete(&model.User{ID: id}).
 		Error; err != nil {
 		return err
-	}
-	return nil
-}
-
-func (u *userQueryImpl) CreateUser(ctx context.Context, user model.User) (model.User, error) {
-	db := u.db.GetConnection()
-	if err := db.
-		WithContext(ctx).
-		Table("users").
-		Save(&user).Error; err != nil {
-		return model.User{}, err
-	}
-	return user, nil
-}
-
-func (u *userQueryImpl) UpdateUser(ctx context.Context, user model.User) (model.User, error) {
-	db := u.db.GetConnection()
-
-	err := db.
-		WithContext(ctx).
-		Updates(&user).
-		Error
-
-	return user, err
+		}
+	return err
 }

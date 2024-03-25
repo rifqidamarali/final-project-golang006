@@ -181,7 +181,7 @@ func (u *userHandlerImpl) UserUpdate(ctx *gin.Context) {
 		return
 	}
 
-	if uint32(userId) != userIdToken {
+	if uint64(userId) != userIdToken {
 		ctx.JSON(http.StatusUnauthorized, pkg.ErrorResponse{Message: "does not have access to edit other user's data"})
 		return
 	}
