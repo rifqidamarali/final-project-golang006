@@ -12,7 +12,7 @@ type SocialMediaRouter interface {
 
 type socialMediaRouterImpl struct {
 	v       *gin.RouterGroup
-	// handler handler.SocialMedia
+	handler handler.SocialMedia
 	auth    middleware.Authorization
 }
 

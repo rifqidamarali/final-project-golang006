@@ -8,7 +8,7 @@ import (
 )
 
 type SocialMediaService interface {
-	CreateSocialMedia(ctx context.Context, userId uint64, SocialMediaCreate model.SocialMedia) (model.SocialMedia, error)
+	CreateSocialMedia(ctx context.Context, userId uint64, SocialMediaCreate model.SocialMediaCreate) (model.SocialMedia, error)
 	GetAllSocialMediasByUserId(ctx context.Context, userId uint64) ([]model.SocialMedia, error)
 	GetSocialMediaById(ctx context.Context, socialMediaId uint64) (model.SocialMedia, error)
 	UpdateSocialMedia(ctx context.Context, socialMediaId model.SocialMedia) (model.SocialMedia, error)
@@ -23,7 +23,7 @@ func NewSocialMediaService(repo repository.SocialMediaRepository) SocialMediaSer
 	return &socialMediaServiceImpl{repo: repo}
 }
 
-func (s *socialMediaServiceImpl) CreateSocialMedia(ctx context.Context, SocialMediaCreate model.SocialMediaCreate) (model.SocialMedia, error) {
+func (s *socialMediaServiceImpl) CreateSocialMedia(ctx context.Context, userId uint64, SocialMediaCreate model.SocialMediaCreate) (model.SocialMedia, error) {
 	socialMedia := model.SocialMedia{}
 	socialMedia.Name = SocialMediaCreate.Name
 	socialMedia.Url = SocialMediaCreate.Url
