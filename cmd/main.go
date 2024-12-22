@@ -33,16 +33,34 @@ func main() {
 
 	// /public => generate JWT public
 	usersGroup := g.Group("/users")
+	photosGroup := g.Group("")
+	commmentsGroup := g.Group("")
+	socialMediasGroup := g.Group("")
 	gorm := infrastructure.NewGormPostgres()
 	userRepository := repository.NewUserRepository(gorm)
+	photoRepository := repository.NewPhotoRepository(gorm)
+	commentRepository := repository.NewCommentRepository(gorm)
+	socialMediaRepository := repository.NewSocialMediaRepository(gorm)
 	// userRepoMongo := repository.NewUserQueryMongo()
 	userService := service.NewUserService(userRepository)
+	photoService := service.NewPhotoService(photoRepository)
+	commentService := service.NewCommentService(commentRepository)
+	socialMediaService := service.NewSocialMediaService(socialMediaRepository)
 	userHandler := handler.NewUserHandler(userService)
+	photoHandler := handler.NewPhotoHandler(photoService)
+	commentHandler := handler.NewCommentHandler(commentService)
+	socialMediaHandler := handler.NewSocialMediaHandler(socialMediaService)
 	auth := middleware.NewAuthorization(userService)
 	userRouter := router.NewUserRouter(usersGroup, userHandler, auth)
+	photoRouter := router.NewPhotoRouter(photosGroup, photoHandler, auth)
+	commentRouter := router.NewCommentRouter(commmentsGroup, commentHandler, auth)
+	socialMediaRouter := router.NewSocialMediaRouter(socialMediasGroup, socialMediaHandler, auth)
 
 	// mount
 	userRouter.Mount()
+	photoRouter.Mount()
+	commentRouter.Mount()
+	socialMediaRouter.Mount()
 	// swagger
 	g.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
