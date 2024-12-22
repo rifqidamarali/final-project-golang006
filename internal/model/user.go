@@ -32,6 +32,8 @@ type UserUpdate struct {
 	Username string `json:"username" validate:"required"`
 	Email    string `json:"email" validate:"required,email"`
 	DoB      time.Time `json:"dob" validate:"required"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
 }
 // func validator
 // func (u UserSignUp) Validate() error {

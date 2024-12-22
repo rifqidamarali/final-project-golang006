@@ -5,7 +5,6 @@ import (
 
 	"github.com/rifqidamarali/final-project-golang006/internal/infrastructure"
 	"github.com/rifqidamarali/final-project-golang006/internal/model"
-	"gorm.io/gorm"
 )
 
 type CommentRepository interface {
@@ -47,12 +46,12 @@ func (c *commentRepositoryImpl) GetAllCommentsByPhotoId(ctx context.Context, pho
 		Table("comments").
 		Where("photo_id = ?", photoId).
 		Where("deleted_at IS NULL").
-		Preload("User", func(db *gorm.DB) *gorm.DB {
-			return db.Select("id, email, username").Table("users").Where("deleted_at is null")
-		}).
-		Preload("Photo", func(db *gorm.DB) *gorm.DB {
-			return db.Select("id, title, caption, photo_url, user_id").Table("photos").Where("deleted_at is null")
-		}).
+		// Preload("User", func(db *gorm.DB) *gorm.DB {
+		// 	return db.Select("id, email, username").Table("users").Where("deleted_at is null")
+		// }).
+		// Preload("Photo", func(db *gorm.DB) *gorm.DB {
+		// 	return db.Select("id, title, caption, photo_url, user_id").Table("photos").Where("deleted_at is null")
+		// }).
 		Find(&comments).
 		Error
 
@@ -72,7 +71,7 @@ func (c *commentRepositoryImpl) GetCommentById(ctx context.Context, id uint64) (
 		Table("comments").
 		Where("id = ?", id).
 		Where("deleted_at IS NULL").
-		Find(comment).
+		Find(&comment).
 		Error
 
 	if err != nil {
@@ -94,12 +93,12 @@ func (c *commentRepositoryImpl) UpdateComment(ctx context.Context, comment model
 
 func (c *commentRepositoryImpl) DeleteComment(ctx context.Context, commentId uint64) error {
 	db := c.db.GetConnection()
-	comment := model.Comment{ID: commentId}
+	comment := model.Comment{Id: commentId}
 
 	if err := db.
 		WithContext(ctx).
 		Model(comment).
-		Delete(comment).
+		Delete(&comment).
 		Error; err != nil {
 			return err
 		}

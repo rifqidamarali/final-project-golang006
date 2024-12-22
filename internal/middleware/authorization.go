@@ -68,6 +68,6 @@ func (a *authorizationImpl) CheckAuth(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusUnauthorized, pkg.ErrorResponse{Message: "user does not exist"})
 		return
 	}
-
+	ctx.Set("UserId", userId)
 	ctx.Next()
 }

@@ -45,9 +45,9 @@ func NewUserHandler(svc service.UserService) UserHandler {
 //	@Router			/users/{id} [get]
 func (u *userHandlerImpl) GetUserById(ctx *gin.Context) {
 	// get id user
-	id, err := strconv.Atoi(ctx.Param("id"))
+	id, err := strconv.Atoi(ctx.Param("userId"))
 	if id == 0 || err != nil {
-		ctx.JSON(http.StatusBadRequest, pkg.ErrorResponse{Message: "invalid required param"})
+		ctx.JSON(http.StatusBadRequest, pkg.ErrorResponse{Message: "invalid required param get user by id"})
 		return
 	}
 	user, err := u.svc.GetUserById(ctx, uint64(id))
@@ -66,13 +66,13 @@ func (u *userHandlerImpl) UserSignUp(ctx *gin.Context) {
 	// binding sign-up body
 	userSignUp := model.UserSignUp{}
 	if err := ctx.Bind(&userSignUp); err != nil {
-		ctx.JSON(http.StatusBadRequest, pkg.ErrorResponse{Message: err.Error()})
+		ctx.JSON(http.StatusBadRequest, pkg.ErrorResponse{Message: "invalid required parameter"})
 		return
 	}
 	validate := validator.New()
 	err := validate.Struct(userSignUp)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, pkg.ErrorResponse{Message: err.Error()})
+		ctx.JSON(http.StatusBadRequest, pkg.ErrorResponse{Message: "invalid validating user"})
 		return
 	}
 
@@ -134,9 +134,9 @@ func (u *userHandlerImpl) UserSignIn(ctx *gin.Context){
 //		@Router			/users/{id} [delete]
 func (u *userHandlerImpl) DeleteUserById(ctx *gin.Context) {
 	// get id user
-	id, err := strconv.Atoi(ctx.Param("id"))
+	id, err := strconv.Atoi(ctx.Param("userId"))
 	if id == 0 || err != nil {
-		ctx.JSON(http.StatusBadRequest, pkg.ErrorResponse{Message: "invalid required param"})
+		ctx.JSON(http.StatusBadRequest, pkg.ErrorResponse{Message: "invalid required param delete user"})
 		return
 	}
 
@@ -169,7 +169,7 @@ func (u *userHandlerImpl) DeleteUserById(ctx *gin.Context) {
 }
 
 func (u *userHandlerImpl) UserUpdate(ctx *gin.Context) {
-	userId, err := strconv.Atoi(ctx.Param("id"))
+	userId, err := strconv.Atoi(ctx.Param("userId"))
 	if userId == 0 || err != nil {
 		ctx.JSON(http.StatusBadRequest, pkg.ErrorResponse{Message: err.Error()})
 		return
@@ -181,13 +181,19 @@ func (u *userHandlerImpl) UserUpdate(ctx *gin.Context) {
 		return
 	}
 
-	if uint64(userId) != userIdToken {
+	uint32Value, ok := userIdToken.(uint32)
+    if !ok {
+        ctx.JSON(http.StatusUnauthorized, pkg.ErrorResponse{Message: "cannot change the data type from interface to float"})
+		return
+    }
+	
+	if uint64(userId) != uint64(uint32Value) {
 		ctx.JSON(http.StatusUnauthorized, pkg.ErrorResponse{Message: "does not have access to edit other user's data"})
 		return
 	}
 
 	userUpdate := model.UserUpdate{}
-	err = ctx.ShouldBindJSON(userUpdate)
+	err = ctx.ShouldBindJSON(&userUpdate)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, pkg.ErrorResponse{Message: err.Error()})
 		return

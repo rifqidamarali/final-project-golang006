@@ -108,5 +108,5 @@ func (u *userRepositoryImpl) DeleteUserById(ctx context.Context, id uint64) erro
 		Error; err != nil {
 		return err
 		}
-	return err
+	return nil
 }

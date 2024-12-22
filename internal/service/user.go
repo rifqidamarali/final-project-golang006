@@ -88,6 +88,8 @@ func (u *userServiceImpl) UpdateUser(ctx context.Context, user model.User) (mode
 	userUpdate.Email = user.Email
 	userUpdate.Username = user.Username
 	userUpdate.DoB = user.DoB
+	userUpdate.CreatedAt = userFind.CreatedAt
+	userUpdate.UpdatedAt = user.UpdatedAt
 	return userUpdate, err
 }
 

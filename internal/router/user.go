@@ -25,14 +25,14 @@ func (u *userRouterImpl) Mount() {
 	// /users/sign-up
 	u.v.POST("/sign-up", u.handler.UserSignUp)
 	u.v.POST("/sign-in", u.handler.UserSignIn)
-	u.v.GET("/:id", u.handler.GetUserById)
+	u.v.GET("/:userId", u.handler.GetUserById)
 	
 	// users
 	u.v.Use(u.auth.CheckAuth)
 	// /users
 	// u.v.GET("", u.handler.GetUsers)
 	// /users/:id
-	u.v.PUT("/:id", u.handler.UserUpdate)
-	u.v.DELETE("/:id", u.handler.DeleteUserById)
+	u.v.PUT("/:userId", u.handler.UserUpdate)
+	u.v.DELETE("/:userId", u.handler.DeleteUserById)
 	
 }

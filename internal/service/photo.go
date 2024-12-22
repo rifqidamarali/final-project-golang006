@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/rifqidamarali/final-project-golang006/internal/model"
@@ -9,11 +10,11 @@ import (
 )
 
 type PhotoService interface {
-	CreatePhoto(ctx context.Context, photo model.Photo) (model.Photo, error)
-	GetAllPhotosByUserId(ctx context.Context, userId uint64) ([]model.Photo, error)
+	CreatePhoto(ctx context.Context, photo model.PhotoRequest) (*model.PhotoResponse, error)
+	GetAllPhotosById(ctx context.Context, userId uint64) ([]model.Photo, error)
 	GetPhotoById(ctx context.Context, photoId uint64) (model.Photo, error)
-	UpdatePhoto(ctx context.Context, photo model.Photo) (model.Photo, error)
-	DeletePhoto(ctx context.Context, photoId uint64) error
+	UpdatePhoto(ctx context.Context, photo model.Photo) (model.PhotoResponse, error)
+	DeletePhoto(ctx context.Context, photoId uint64) (*model.Photo, error)
 }
 
 type photoServiceImpl struct {
@@ -24,30 +25,44 @@ func NewPhotoService(repo repository.PhotoRepository) PhotoService {
 	return &photoServiceImpl{repo: repo}
 }
 
-func (p *photoServiceImpl) CreatePhoto(ctx context.Context, photo model.Photo) (model.Photo, error) {
-	photo, err := p.repo.CreatePhoto(ctx, photo)
+func (p *photoServiceImpl) CreatePhoto(ctx context.Context, req model.PhotoRequest) (*model.PhotoResponse, error) {
+	// from uint32 
+	
+	userId := ctx.Value("UserId")
+	uint32Value, ok := userId.(uint32)
+    if !ok {
+		return nil, errors.New("cant convert to uint32")
+    }
+
+	photo := model.Photo{
+		Title: req.Title,
+		Url: req.Url,
+		Caption: req.Caption,
+		UserId: uint64(uint32Value),
+	}
+	
+	res, err := p.repo.CreatePhoto(ctx, photo)
 	if err != nil {
-		return photo, err
+		return nil, err
 	}
 
-	photoResponse := model.Photo{}
-	photoResponse.ID = photo.ID
-	photoResponse.Title = photo.Title
-	photoResponse.Caption = photo.Caption
-	photoResponse.Url = photo.Url
-	photoResponse.UserID = photo.UserID
-	photoResponse.CreatedAt = time.Now()
+	photoResponse := model.PhotoResponse{}
+	photoResponse.Id = res.Id
+	photoResponse.Title = res.Title
+	photoResponse.Caption = res.Caption
+	photoResponse.Url = res.Url
+	photoResponse.UserId = uint64(uint32Value)
 
-	return photoResponse, err
+	return &photoResponse, err
 }
 
-func (p *photoServiceImpl) GetAllPhotosByUserId(ctx context.Context, userId uint64) ([]model.Photo, error) {
-	photos, err := p.repo.GetAllPhotosByUserId(ctx, userId)
+func (p *photoServiceImpl) GetAllPhotosById(ctx context.Context, userId uint64) ([]model.Photo, error) {
+	photos, err := p.repo.GetAllPhotosById(ctx, userId)
 	if err != nil {
 		return photos, err
 	}
 
-	return photos, err
+	return photos, nil
 }
 
 func (p *photoServiceImpl) GetPhotoById(ctx context.Context, photoId uint64) (model.Photo, error) {
@@ -59,24 +74,43 @@ func (p *photoServiceImpl) GetPhotoById(ctx context.Context, photoId uint64) (mo
 	return photo, err
 }
 
-func (p *photoServiceImpl) UpdatePhoto(ctx context.Context, photo model.Photo) (model.Photo, error) {
-	photo, err := p.repo.UpdatePhoto(ctx, photo)
+func (p *photoServiceImpl) UpdatePhoto(ctx context.Context, photo model.Photo) (model.PhotoResponse, error) {
+	photoResponse := model.PhotoResponse{}
+	photo.UpdatedAt = time.Now()
+	photoGet, err := p.repo.GetPhotoById(ctx, photo.Id)
 	if err != nil {
-		return photo, err
+		return model.PhotoResponse{}, err
+	}
+	photo, err = p.repo.UpdatePhoto(ctx, photo)
+	if err != nil {
+		return photoResponse, err
 	}
 
-	photoResponse := model.Photo{}
-	photoResponse.ID = photo.ID
+	photoResponse.Id = photo.Id
 	photoResponse.Title = photo.Title
 	photoResponse.Caption = photo.Caption
 	photoResponse.Url = photo.Url
-	photoResponse.UserID = photo.UserID
+	photoResponse.UserId = photoGet.UserId
+	photoResponse.CreatedAt = photoGet.CreatedAt
 	photoResponse.UpdatedAt = photo.UpdatedAt
 
-	return photoResponse, err}
+	return photoResponse, err
+}
 
-func (p *photoServiceImpl) DeletePhoto(ctx context.Context, photoId uint64) error {
-	err := p.repo.DeletePhoto(ctx, photoId)
+func (p *photoServiceImpl) DeletePhoto(ctx context.Context, photoId uint64) (*model.Photo, error) {
+	photo, err := p.GetPhotoById(ctx, photoId)
+	if err != nil {
+		return &model.Photo{}, err
+	}
 
-	return err
+	if photo.Id == 0 {
+		return &model.Photo{}, err
+	}
+
+	err = p.repo.DeletePhoto(ctx, photoId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &photo, nil
 }

@@ -5,7 +5,6 @@ import (
 
 	"github.com/rifqidamarali/final-project-golang006/internal/infrastructure"
 	"github.com/rifqidamarali/final-project-golang006/internal/model"
-	"gorm.io/gorm"
 )
 
 type SocialMediaRepository interface {
@@ -44,9 +43,9 @@ func (s *socialMediaRepositoryImpl) GetAllSocialMediasByUserId(ctx context.Conte
 		Table("social_medias").
 		Where("user_id = ?", userId).
 		Where("deleted_at IS NULL").
-		Preload("User", func(db *gorm.DB) *gorm.DB {
-			return db.Select("id, email, username").Table("users").Where("deleted_at is null")
-		}).
+		// Preload("User", func(db *gorm.DB) *gorm.DB {
+		// 	return db.Select("id, email, username").Table("users").Where("deleted_at is null")
+		// }).
 		Find(&socialMedias).
 		Error
 
@@ -66,7 +65,7 @@ func (s *socialMediaRepositoryImpl) GetSocialMediaById(ctx context.Context, soci
 		Table("social_medias").
 		Where("id = ?", socialMediaId).
 		Where("deleted_at IS NULL").
-		Find(socialMedia).
+		Find(&socialMedia).
 		Error
 
 	if err != nil {
@@ -89,7 +88,7 @@ func (s *socialMediaRepositoryImpl) UpdateSocialMedia(ctx context.Context, socia
 
 func (s *socialMediaRepositoryImpl) DeleteSocialMedia(ctx context.Context, socialMediaId uint64) error {
 	db := s.db.GetConnection()
-	social := model.SocialMedia{ID: socialMediaId}
+	social := model.SocialMedia{Id: socialMediaId}
 
 	if err := db.
 		WithContext(ctx).

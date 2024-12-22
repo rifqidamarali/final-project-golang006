@@ -13,13 +13,16 @@ const (
 )
 
 func GenerateToken(claim any) (token string, err error) {
+	jwtSecret := "mysecretjwtdontsharethistoanyoneelse"
 	jwtClaim := jwt.MapClaims{}
-	b, err := json.Marshal(claim)
+
+
+	encodedClaim, err := json.Marshal(claim)
 	if err != nil {
 		log.Println("cannot marshal claim payload")
 		return
 	}
-	err = json.Unmarshal(b, &jwtClaim)
+	err = json.Unmarshal(encodedClaim, &jwtClaim)
 	if err != nil {
 		log.Println("cannot mapping claim to jwt claim")
 		return
@@ -27,7 +30,7 @@ func GenerateToken(claim any) (token string, err error) {
 	// prepare
 	parseToken := jwt.NewWithClaims(jwt.SigningMethodHS512, jwtClaim)
 	// generate token
-	token, err = parseToken.SignedString([]byte(SECRET_JWT))
+	token, err = parseToken.SignedString([]byte(jwtSecret))
 	if err != nil {
 		log.Println("cannot generate token", err.Error())
 		return
@@ -36,12 +39,13 @@ func GenerateToken(claim any) (token string, err error) {
 }
 
 func ValidateToken(token string) (claim jwt.MapClaims, err error) {
+	jwtSecret := "mysecretjwtdontsharethistoanyoneelse"
 	jwtToken, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, jwt.ErrSignatureInvalid
 		}
 
-		return []byte(SECRET_JWT), nil
+		return []byte(jwtSecret), nil
 	})
 	if err != nil {
 		log.Println("error validating jwt token", err.Error())
@@ -68,5 +72,7 @@ func GenerateHash(in string) (out string, err error) {
 
 func CheckHash(password string, hash string) bool{
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return (err == nil)
+	return err == nil
 }
+
+
